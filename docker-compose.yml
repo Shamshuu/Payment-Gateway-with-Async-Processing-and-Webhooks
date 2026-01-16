@@ -1,0 +1,115 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pg_gateway
+    environment:
+      POSTGRES_USER: gateway_user
+      POSTGRES_PASSWORD: gateway_pass
+      POSTGRES_DB: payment_gateway
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gateway_user -d payment_gateway"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gateway_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_gateway
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - gateway_net
+
+  api:
+    build:
+      context: ./backend
+    container_name: gateway_api
+    ports:
+      - "8000:8000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/payment_gateway
+      SPRING_DATASOURCE_USERNAME: gateway_user
+      SPRING_DATASOURCE_PASSWORD: gateway_pass
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      TEST_MERCHANT_EMAIL: ${TEST_MERCHANT_EMAIL:-test@example.com}
+      TEST_API_KEY: ${TEST_API_KEY:-key_test_abc123}
+      TEST_API_SECRET: ${TEST_API_SECRET:-secret_test_xyz789}
+      UPI_SUCCESS_RATE: ${UPI_SUCCESS_RATE:-0.90}
+      CARD_SUCCESS_RATE: ${CARD_SUCCESS_RATE:-0.95}
+      PROCESSING_DELAY_MIN: ${PROCESSING_DELAY_MIN:-5000}
+      PROCESSING_DELAY_MAX: ${PROCESSING_DELAY_MAX:-10000}
+      TEST_MODE: ${TEST_MODE:-false}
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:8000/actuator/health || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - gateway_net
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gateway_worker
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/payment_gateway
+      - SPRING_DATASOURCE_USERNAME=gateway_user
+      - SPRING_DATASOURCE_PASSWORD=gateway_pass
+      - APP_ROLE=WORKER
+    command: ["java", "-jar", "/app/app.jar", "--spring.data.redis.host=redis", "--spring.data.redis.port=6379"]
+    networks:
+      - gateway_net
+
+  checkout:
+    build:
+      context: ./checkout-page
+    container_name: gateway_checkout
+    ports:
+      - "3001:80"
+    depends_on:
+      - api
+    networks:
+      - gateway_net
+
+  dashboard:
+    build:
+      context: ./frontend
+    container_name: gateway_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - gateway_net
+
+volumes:
+  postgres_data:
+
+networks:
+  gateway_net:
