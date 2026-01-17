@@ -1,4 +1,4 @@
-# 💳 Payment Gateway with with Async Processing and Webhooks
+# 💳 Payment Gateway with Async Processing and Webhooks
 
 A full-stack payment gateway simulation built with **Java Spring Boot**, **React**, **PostgreSQL**, **Redis**, and **Docker**. This system mimics a real-world payment infrastructure, featuring a secure REST API, async payment processing, webhook delivery, a merchant dashboard, and an embeddable JavaScript SDK for hosted checkout.
 
@@ -97,7 +97,7 @@ No local Java or Node installation required.
 
 ```bash
 git clone https://github.com/Shamshuu/Payment-Gateway-with-Async-Processing-and-Webhooks
-cd Payment Gateway with Async Processing and Webhooks
+cd Payment-Gateway-with-Async-Processing-and-Webhooks
 ```
 
 ### 2. Start All Services
