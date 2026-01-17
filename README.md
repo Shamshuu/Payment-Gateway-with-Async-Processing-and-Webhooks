@@ -96,8 +96,8 @@ No local Java or Node installation required.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Shamshuu/Payment-Gateway-with-Multi-Method-Processing-and-Hosted-Checkout
-cd Payment-Gateway-with-Multi-Method-Processing-and-Hosted-Checkout
+git clone https://github.com/Shamshuu/Payment-Gateway-with-Async-Processing-and-Webhooks
+cd Payment Gateway with Async Processing and Webhooks
 ```
 
 ### 2. Start All Services
