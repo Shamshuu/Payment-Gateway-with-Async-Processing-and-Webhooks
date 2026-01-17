@@ -1,4 +1,4 @@
-# 💳 Payment Gateway with Multi-Method Processing & Hosted Checkout
+# 💳 Payment Gateway with with Async Processing and Webhooks
 
 A full-stack payment gateway simulation built with **Java Spring Boot**, **React**, **PostgreSQL**, **Redis**, and **Docker**. This system mimics a real-world payment infrastructure, featuring a secure REST API, async payment processing, webhook delivery, a merchant dashboard, and an embeddable JavaScript SDK for hosted checkout.
 
